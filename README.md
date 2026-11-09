@@ -10,7 +10,7 @@ Custom FM radio app for Android, built around hardware FM tuner access on differ
 
 <p align="center">
   <img src="https://img.shields.io/github/v/release/NordisApps/nordis_fm_radio?include_prereleases&label=release" alt="Release">
-  <img src="https://img.shields.io/github/downloads/NordisApps/nordis_fm_radio/total?label=downloads" alt="Downloads">
+  <img src="https://img.shields.io/github/downloads/NordisApps/nordis-fm-radio/total?label=downloads" alt="Downloads">
   <img src="https://img.shields.io/badge/Kotlin-7F52FF?logo=kotlin&logoColor=white" alt="Kotlin">
   <img src="https://img.shields.io/badge/Jetpack%20Compose-4285F4?logo=jetpackcompose&logoColor=white" alt="Jetpack Compose">
   <img src="https://img.shields.io/badge/Material%203-6750A4?logo=materialdesign&logoColor=white" alt="Material 3">
