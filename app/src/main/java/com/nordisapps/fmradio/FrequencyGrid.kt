@@ -1,4 +1,4 @@
-package com.nordisapps
+package com.nordisapps.fmradio
 
 import kotlin.math.ceil
 import kotlin.math.floor

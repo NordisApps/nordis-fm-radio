@@ -8,7 +8,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.nordisapps.FrequencyGrid
 import com.nordisapps.fmradio.data.FavoriteStationsDataStore
 import com.nordisapps.fmradio.data.SettingsDataStore
 import com.nordisapps.fmradio.data.StationsDataStore

@@ -22,7 +22,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.nordisapps.FrequencyGrid
+import com.nordisapps.fmradio.FrequencyGrid
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.roundToInt
