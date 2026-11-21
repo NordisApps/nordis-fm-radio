@@ -19,6 +19,8 @@ android {
         versionName = "0.1.0.2-alpha"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("boolean", "IS_DIAG", "false")
     }
 
     buildTypes {
@@ -29,11 +31,20 @@ android {
                 "proguard-rules.pro"
             )
         }
+
+        create("diag") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".diag"
+            versionNameSuffix = "-diag"
+            buildConfigField("boolean", "IS_DIAG", "true")
+            matchingFallbacks += "debug"
+        }
     }
 
     buildFeatures {
         compose = true
         aidl = true
+        buildConfig = true
     }
 
     compileOptions {
