@@ -4,10 +4,12 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.nordisapps.fmradio.data.LanguageManager
 
 class FmRadioForegroundService : Service() {
     companion object {
@@ -21,6 +23,10 @@ class FmRadioForegroundService : Service() {
     private val radioManager by lazy { FmRadioManager(applicationContext) }
 
     override fun onBind(intent: Intent?): IBinder? = null
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LanguageManager.wrap(newBase))
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -43,7 +49,7 @@ class FmRadioForegroundService : Service() {
         val stationName = intent?.getStringExtra(EXTRA_STATION_NAME) ?: ""
 
         startForeground(NOTIFICATION_ID, buildNotification(frequency, stationName))
-        return START_STICKY
+        return START_NOT_STICKY
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
@@ -59,6 +65,8 @@ class FmRadioForegroundService : Service() {
     }
 
     private fun buildNotification(frequency: String, stationName: String) = run {
+        val freqText = getString(R.string.notif_frequency, frequency)
+
         val stopIntent = Intent(this, FmRadioForegroundService::class.java).apply {
             action = ACTION_STOP
         }
@@ -68,17 +76,19 @@ class FmRadioForegroundService : Service() {
         )
 
         val openAppIntent = packageManager.getLaunchIntentForPackage(packageName)
-        val contentPendingIntent = PendingIntent.getActivity(
-            this, 0, openAppIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+        val contentPendingIntent = packageManager.getLaunchIntentForPackage(packageName)?.let {
+            PendingIntent.getActivity(
+                this, 0, it,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+        }
 
         NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_media_play)
-            .setContentTitle(stationName.ifBlank { "$frequency MHz" })
-            .setContentText(if (stationName.isNotBlank()) "$frequency MHz" else "Nordis FM Radio")
+            .setContentTitle(stationName.ifBlank { freqText })
+            .setContentText(if (stationName.isNotBlank()) freqText else getString(R.string.notif_default_text))
             .setContentIntent(contentPendingIntent)
-            .addAction(android.R.drawable.ic_media_pause, "Стоп", stopPendingIntent)
+            .addAction(android.R.drawable.ic_media_pause, getString(R.string.notif_action_stop), stopPendingIntent)
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()
@@ -87,10 +97,19 @@ class FmRadioForegroundService : Service() {
     private fun createNotificationChannel() {
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "FM Radio Playback",
+            getString(R.string.notif_channel_name),
             NotificationManager.IMPORTANCE_LOW
         )
         val notificationManager = getSystemService(NotificationManager::class.java)
         notificationManager.createNotificationChannel(channel)
+    }
+
+    override fun onDestroy() {
+        try {
+            radioManager.stop()
+        } catch (e: Exception) {
+            Log.e("FMTEST", "stop in onDestroy failed", e)
+        }
+        super.onDestroy()
     }
 }
