@@ -3,18 +3,16 @@ package com.nordisapps.fmradio.ui
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.res.stringResource
 import com.nordisapps.fmradio.RadioViewModel
 
 @Composable
 fun RadioHomeScreen(viewModel: RadioViewModel, snackbarHostState: SnackbarHostState) {
     val uiState = viewModel.uiState
 
-    LaunchedEffect(uiState.readinessMessage) {
-        val message = uiState.readinessMessage
-        if (message != null) {
-            snackbarHostState.showSnackbar(message)
-            viewModel.clearReadinessMessage()
-        }
+    val text = uiState.readinessMessage?.let { stringResource(it) }
+    LaunchedEffect(text) {
+        text?.let { snackbarHostState.showSnackbar(it); viewModel.clearReadinessMessage() }
     }
 
     RadioPlayerScreen(

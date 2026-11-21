@@ -1,5 +1,9 @@
 package com.nordisapps.fmradio.ui
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,7 +25,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.nordisapps.fmradio.R
+import com.nordisapps.fmradio.data.LanguageManager
 
 @Composable
 fun SettingsScreen(
@@ -34,27 +42,49 @@ fun SettingsScreen(
     isMonoMode: Boolean,
     onMonoModeToggle: (Boolean) -> Unit,
     isSoftMuteEnabled: Boolean,
-    onSoftMuteToggle: (Boolean) -> Unit
+    onSoftMuteToggle: (Boolean) -> Unit,
+    onOpenDiagnostics: (() -> Unit)? = null
 ) {
+    val context = LocalContext.current
+    var language by remember { mutableStateOf(LanguageManager.getLanguage(context)) }
+
     LazyColumn {
-        item { SettingsSectionHeader("Тюнинг") }
+        item { SettingsSectionHeader(stringResource(R.string.settings_section_general)) }
 
         item {
             SettingsDropdownRow(
-                title = "Шаг настройки",
-                selectedLabel = tuningStep.label,
+                title = stringResource(R.string.settings_language_title),
+                selectedLabel = languageName(language),
+                options = LanguageManager.SUPPORTED_LANGUAGES.toList(),
+                optionLabel = { languageName(it) },
+                onOptionSelected = { code ->
+                    if (code != language) {
+                        language = code
+                        LanguageManager.saveLanguage(context, code)
+                        context.findActivity()?.recreate()
+                    }
+                }
+            )
+        }
+
+        item { SettingsSectionHeader(stringResource(R.string.settings_section_tuning)) }
+
+        item {
+            SettingsDropdownRow(
+                title = stringResource(R.string.settings_tuning_step),
+                selectedLabel = stringResource(tuningStep.labelRes),
                 options = TuningStep.entries,
-                optionLabel = { it.label },
+                optionLabel = { stringResource(it.labelRes) },
                 onOptionSelected = onTuningStepChange
             )
         }
 
         item {
             SettingsDropdownRow(
-                title = "Диапазон частот",
-                selectedLabel = frequencyBand.label,
+                title = stringResource(R.string.settings_frequency_band),
+                selectedLabel = stringResource(frequencyBand.labelRes),
                 options = FrequencyBand.entries,
-                optionLabel = { it.label },
+                optionLabel = { stringResource(it.labelRes) },
                 onOptionSelected = onFrequencyBandChange
             )
         }
@@ -62,7 +92,7 @@ fun SettingsScreen(
         if (frequencyBand == FrequencyBand.JAPAN_EXTENDED) {
             item {
                 Text(
-                    text = "На некоторых устройствах этот режим может быть ограничен до 76–90 МГц из-за особенностей прошивки FM-чипа",
+                    text = stringResource(R.string.settings_japan_warning),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
@@ -70,12 +100,12 @@ fun SettingsScreen(
             }
         }
 
-        item { SettingsSectionHeader("Аудио") }
+        item { SettingsSectionHeader(stringResource(R.string.settings_section_audio)) }
 
         item {
             SettingsSwitchRow(
-                title = "RDS",
-                subtitle = "Название станции и радиотекст",
+                title = stringResource(R.string.settings_rds),
+                subtitle = stringResource(R.string.settings_rds_subtitle),
                 checked = isRdsEnabled,
                 onCheckedChange = onRdsToggle
             )
@@ -83,7 +113,7 @@ fun SettingsScreen(
 
         item {
             SettingsSwitchRow(
-                title = "Моно-режим",
+                title = stringResource(R.string.settings_mono),
                 checked = isMonoMode,
                 onCheckedChange = onMonoModeToggle
             )
@@ -91,11 +121,22 @@ fun SettingsScreen(
 
         item {
             SettingsSwitchRow(
-                title = "Плавное приглушение",
-                subtitle = "Снижает шум при слабом сигнале",
+                title = stringResource(R.string.settings_softmute),
+                subtitle = stringResource(R.string.settings_softmute_subtitle),
                 checked = isSoftMuteEnabled,
                 onCheckedChange = onSoftMuteToggle
             )
+        }
+
+        if (onOpenDiagnostics != null) {
+            item { SettingsSectionHeader("Debug") }
+            item {
+                ListItem(
+                    headlineContent = { Text("Diagnostics") },
+                    supportingContent = { Text("FM service report for the developer") },
+                    modifier = Modifier.clickable(onClick = onOpenDiagnostics)
+                )
+            }
         }
     }
 }
@@ -132,7 +173,7 @@ private fun <T> SettingsDropdownRow(
     title: String,
     selectedLabel: String,
     options: List<T>,
-    optionLabel: (T) -> String,
+    optionLabel: @Composable (T) -> String,
     onOptionSelected: (T) -> Unit
 ) {
     var isExpanded by remember { mutableStateOf(false) }
@@ -163,14 +204,25 @@ private fun <T> SettingsDropdownRow(
     )
 }
 
-enum class TuningStep(val label: String, val stepMhz: Double) {
-    STEP_50_KHZ("50 кГц", 0.05),
-    STEP_100_KHZ("100 кГц", 0.1),
-    STEP_200_KHZ("200 кГц", 0.2)
+private fun languageName(code: String): String = when (code) {
+    "ru" -> "Русский"
+    else -> "English"
 }
 
-enum class FrequencyBand(val label: String, val minMhz: Double, val maxMhz: Double) {
-    STANDARD("87.5-108 МГц", 87.5, 108.0),
-    JAPAN("76-90 МГц", 76.0, 90.0),
-    JAPAN_EXTENDED("76-108 МГц", 76.0, 108.0)
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}
+
+enum class TuningStep(@param:StringRes val labelRes: Int, val stepMhz: Double) {
+    STEP_50_KHZ(R.string.step_50_khz, 0.05),
+    STEP_100_KHZ(R.string.step_100_khz, 0.1),
+    STEP_200_KHZ(R.string.step_200_khz, 0.2)
+}
+
+enum class FrequencyBand(@param:StringRes val labelRes: Int, val minMhz: Double, val maxMhz: Double) {
+    STANDARD(R.string.band_standard, 87.5, 108.0),
+    JAPAN(R.string.band_japan, 76.0, 90.0),
+    JAPAN_EXTENDED(R.string.band_japan_extended, 76.0, 108.0)
 }

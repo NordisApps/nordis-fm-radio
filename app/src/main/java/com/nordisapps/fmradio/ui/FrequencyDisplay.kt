@@ -14,10 +14,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.nordisapps.fmradio.R
 import kotlin.math.roundToInt
 
 @Composable
@@ -31,7 +33,10 @@ fun FrequencyDisplay(
     var showDialog by remember { mutableStateOf(false) }
 
     Text(
-        text = if (currentFrequency.isBlank()) "${frequencyBand.minMhz} MHz" else "$currentFrequency MHz",
+        text = stringResource(
+            R.string.freq_mhz,
+            currentFrequency.ifBlank { frequencyBand.minMhz.toString() }
+        ),
         fontSize = 56.sp,
         fontWeight = FontWeight.Bold,
         modifier = modifier
@@ -73,7 +78,7 @@ private fun FrequencyInputDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Ввести частоту") },
+        title = { Text(stringResource(R.string.freq_dialog_title)) },
         text = {
             OutlinedTextField(
                 value = text,
@@ -90,14 +95,21 @@ private fun FrequencyInputDialog(
                 },
                 label = {
                     Text(
-                        "${frequencyBand.minMhz} - ${frequencyBand.maxMhz}, шаг ${tuningStep.stepMhz}"
+                        stringResource(
+                            R.string.freq_dialog_hint,
+                            frequencyBand.minMhz, frequencyBand.maxMhz, tuningStep.stepMhz
+                        )
                     )
-                        },
+                },
                 isError = text.isNotEmpty() && !isValid,
                 supportingText = {
                     if (text.isNotEmpty() && !isValid) {
                         Text(
-                            "Введите значение от ${frequencyBand.minMhz} до ${frequencyBand.maxMhz}"
+                            stringResource(
+                                R.string.freq_dialog_error,
+                                frequencyBand.minMhz,
+                                frequencyBand.maxMhz
+                            )
                         )
                     }
                 },
@@ -116,12 +128,12 @@ private fun FrequencyInputDialog(
                 },
                 enabled = isValid
             ) {
-                Text("Настроить")
+                Text(stringResource(R.string.freq_dialog_confirm))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Отмена")
+                Text(stringResource(R.string.action_cancel))
             }
         }
     )

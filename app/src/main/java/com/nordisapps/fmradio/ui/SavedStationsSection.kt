@@ -20,9 +20,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.nordisapps.fmradio.R
 
 @Composable
 fun SavedStationsSection(
@@ -36,14 +38,14 @@ fun SavedStationsSection(
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
         Text(
-            text = "Сохранённые станции",
+            text = stringResource(R.string.saved_stations),
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
         if (stations.isEmpty()) {
             Text(
-                text = "Пока здесь пусто. Запустите сканирование, чтобы найти станции",
+                text = stringResource(R.string.empty_saved_stations),
                 modifier = Modifier.padding(vertical = 16.dp)
             )
         } else {
@@ -61,7 +63,7 @@ fun SavedStationsSection(
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(
-                                text = "$freq MHz",
+                                text = stringResource(R.string.freq_mhz, freq),
                                 modifier = Modifier.fillMaxWidth(),
                                 textAlign = TextAlign.Start
                             )
@@ -69,7 +71,8 @@ fun SavedStationsSection(
                         IconButton(onClick = { onFavoriteToggle(freq) }) {
                             Icon(
                                 imageVector = if (isFavorite) Icons.Filled.Star else Icons.Outlined.StarOutline,
-                                contentDescription = if (isFavorite) "Убрать из избранного" else "Добавить в избранное",
+                                contentDescription = if (isFavorite) stringResource(R.string.remove_from_favorites)
+                                else stringResource(R.string.add_to_favorites),
                                 tint = if (isFavorite) Color(0xFFFFC107) else MaterialTheme.colorScheme.onSurface
                             )
                         }

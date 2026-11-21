@@ -1,5 +1,6 @@
 package com.nordisapps.fmradio.ui
 
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
@@ -40,13 +41,19 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import com.nordisapps.fmradio.RadioViewModel
+import com.nordisapps.fmradio.BuildConfig
+import com.nordisapps.fmradio.R
+import com.nordisapps.fmradio.diag.DiagnosticScreen
+import com.nordisapps.fmradio.system.SystemServiceLocator
+import com.nordisapps.fmradio.system.FM_SERVICE_NAME
 
-sealed class Screen(val route: String, val label: String) {
-    object Home : Screen("home", "Главная")
-    object Favorites : Screen("favorites", "Избранное")
-    object Settings : Screen("settings", "Настройки")
+sealed class Screen(val route: String, @param:StringRes val labelRes: Int) {
+    object Home : Screen("home", R.string.nav_home)
+    object Favorites : Screen("favorites", R.string.nav_favorites)
+    object Settings : Screen("settings", R.string.nav_settings)
 }
 
 private val bottomNavItems = listOf(Screen.Home, Screen.Favorites, Screen.Settings)
@@ -57,11 +64,11 @@ private fun tabIndex(route: String?): Int {
     return tabOrder.indexOf(route).let { if (it == -1) 0 else it }
 }
 
-private fun labelForRoute(route: String?): String {
-    return when (route) {
-        Screen.Home.route -> "ФМ Радио"
-        else -> allScreens.find { it.route == route }?.label ?: "ФМ Радио"
-    }
+@StringRes
+private fun labelResForRoute(route: String?): Int = when (route) {
+    Screen.Home.route -> R.string.title_fm_radio
+    "diag" -> R.string.title_diag
+    else -> allScreens.find { it.route == route }?.labelRes ?: R.string.title_fm_radio
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -108,7 +115,7 @@ fun AppNavHost(
                 )
             } else {
                 TopAppBar(
-                    title = { Text(labelForRoute(currentDestination?.route)) }
+                    title = { Text(stringResource(labelResForRoute(currentDestination?.route))) }
                 )
             }
         },
@@ -142,7 +149,7 @@ fun AppNavHost(
                                 contentDescription = null
                             )
                         },
-                        label = { Text(screen.label) }
+                        label = { Text(stringResource(screen.labelRes)) }
                     )
                 }
             }
@@ -194,8 +201,18 @@ fun AppNavHost(
                     isMonoMode = uiState.isMonoMode,
                     onMonoModeToggle = settingsViewModel::setMonoMode,
                     isSoftMuteEnabled = uiState.isSoftMuteEnabled,
-                    onSoftMuteToggle = settingsViewModel::setSoftMuteEnabled
+                    onSoftMuteToggle = settingsViewModel::setSoftMuteEnabled,
+                    onOpenDiagnostics = if (BuildConfig.IS_DIAG) {
+                        { navController.navigate("diag") }
+                    } else null
                 )
+            }
+            if (BuildConfig.IS_DIAG) {
+                composable("diag") {
+                    DiagnosticScreen(binderProvider = {
+                        SystemServiceLocator.getServiceOrNull(FM_SERVICE_NAME)
+                    })
+                }
             }
         }
     }
@@ -214,7 +231,7 @@ fun FavouritesScreen(
     ) {
 
         if (favoriteStations.isEmpty()) {
-            Text("Пока нет избранных станций. Нажмите на звёздочку рядом со станцией, чтобы добавить.")
+            Text(stringResource(R.string.favorites_empty))
         } else {
             LazyColumn(modifier = Modifier.fillMaxWidth()) {
                 items(favoriteStations) { freq ->
@@ -230,7 +247,7 @@ fun FavouritesScreen(
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(
-                                text = "$freq MHz",
+                                text = stringResource(R.string.freq_mhz, freq.toString()),
                                 modifier = Modifier.fillMaxWidth(),
                                 textAlign = TextAlign.Start
                             )
@@ -238,7 +255,7 @@ fun FavouritesScreen(
                         IconButton(onClick = { onFavoriteToggle(freq) }) {
                             Icon(
                                 imageVector = Icons.Filled.Star,
-                                contentDescription = "Убрать из избранного",
+                                contentDescription = stringResource(R.string.favorites_remove),
                                 tint = Color(0xFFFFC107)
                             )
                         }

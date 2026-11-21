@@ -4,7 +4,7 @@ import com.nordisapps.fmradio.ui.FrequencyBand
 import com.nordisapps.fmradio.ui.TuningStep
 
 data class RadioUiState(
-    val readinessMessage: String? = null,
+    val readinessMessage: Int? = null,
     val stationName: String = "",
     val radioText: String = "",
     val currentFrequency: String = "",

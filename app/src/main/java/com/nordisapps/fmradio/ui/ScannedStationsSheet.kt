@@ -12,8 +12,10 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.nordisapps.fmradio.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,21 +32,21 @@ fun ScannedStationsSheet(
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             Text(
-                text = "Найденные станции (${stations.size})",
+                text = stringResource(R.string.stations_found, stations.size),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
             if (stations.isEmpty()) {
                 Text(
-                    text = "Станции не найдены",
+                    text = stringResource(R.string.stations_not_found),
                     modifier = Modifier.padding(vertical = 24.dp)
                 )
             } else {
                 LazyColumn(modifier = Modifier.padding(bottom = 12.dp)) {
                     items(stations) { freq ->
                         Text(
-                            text = "$freq MHz",
+                            text = stringResource(R.string.freq_mhz, freq),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 8.dp)
@@ -59,7 +61,7 @@ fun ScannedStationsSheet(
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
             ) {
-                Text("OK")
+                Text(stringResource(R.string.stations_sheet_action_confirm))
             }
         }
     }

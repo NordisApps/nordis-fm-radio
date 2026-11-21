@@ -50,10 +50,10 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         return RadioReadiness.Ready
     }
 
-    private fun RadioReadiness.toMessage(): String? = when (this) {
+    private fun RadioReadiness.toMessage(): Int? = when (this) {
         RadioReadiness.Ready -> null
-        RadioReadiness.ServiceUnavailable -> "FM-радио не поддерживается на этом устройстве"
-        RadioReadiness.HeadsetRequired -> "Подключите наушники для приёма FM-радио"
+        RadioReadiness.ServiceUnavailable -> R.string.fm_not_supported
+        RadioReadiness.HeadsetRequired -> R.string.headset_required
     }
 
     fun clearReadinessMessage() {
@@ -97,7 +97,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
                 getApplication<Application>().stopService(
                     Intent(getApplication(), FmRadioForegroundService::class.java)
                 )
-                uiState = uiState.copy(readinessMessage = "Наушники отключены — радио остановлено")
+                uiState = uiState.copy(readinessMessage = R.string.headset_disconnected)
             }
         }
 
@@ -167,9 +167,9 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
         val seconds = recordingSeconds % 60
 
         val formatted = if (hours > 0) {
-            "%02d:%02d:%02d".format(hours, minutes, seconds)
+            String.format(Locale.US,"%02d:%02d:%02d", hours, minutes, seconds)
         } else {
-            "%02d:%02d".format(minutes, seconds)
+            String.format(Locale.US, "%02d:%02d", minutes, seconds)
         }
 
         uiState = uiState.copy(recordingTime = formatted)

@@ -26,7 +26,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.nordisapps.fmradio.R
 
 @Composable
 fun RadioPlayerScreen(
@@ -119,7 +121,10 @@ fun PlaybackControlsRow(
 
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         IconButton(onClick = onPowerClick) {
-            Icon(Icons.Default.PowerSettingsNew, contentDescription = "Включить/выключить радио")
+            Icon(
+                Icons.Default.PowerSettingsNew,
+                contentDescription = stringResource(R.string.toggle_radio)
+            )
         }
 
         if (!isRecording) {
@@ -131,7 +136,7 @@ fun PlaybackControlsRow(
                     } else {
                         colorScheme.onSurface.copy(alpha = 0.38f)
                     },
-                    contentDescription = "Запись"
+                    contentDescription = stringResource(R.string.start_recording)
                 )
             }
         } else {
@@ -139,17 +144,23 @@ fun PlaybackControlsRow(
                 Icon(
                     imageVector = if (isRecordingPaused) Icons.Default.PlayArrow else Icons.Default.Pause,
                     contentDescription = if (isRecordingPaused) {
-                        "Продолжить запись"
+                        stringResource(R.string.resume_recording)
                     } else {
-                        "Приостановить запись"
+                        stringResource(R.string.pause_recording)
                     }
                 )
             }
             IconButton(onClick = onRecordStopClick) {
-                Icon(Icons.Default.Stop, contentDescription = "Остановить запись")
+                Icon(
+                    Icons.Default.Stop,
+                    contentDescription = stringResource(R.string.stop_recording)
+                )
             }
             IconButton(onClick = onRecordCancelClick) {
-                Icon(Icons.Default.Close, contentDescription = "Отменить запись")
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = stringResource(R.string.cancel_recording)
+                )
             }
         }
     }
@@ -169,14 +180,17 @@ fun ScanSpeakerRow(
             if (isScanning) {
                 CircularProgressIndicator(modifier = Modifier.padding(4.dp))
             } else {
-                Icon(Icons.Default.Radar, contentDescription = "Сканировать")
+                Icon(
+                    Icons.Default.Radar,
+                    contentDescription = stringResource(R.string.scan_stations)
+                )
             }
         }
 
         IconButton(onClick = onSpeakerClick, enabled = isPlaying) {
             Icon(
                 imageVector = if (isSpeakerOn) Icons.AutoMirrored.Filled.VolumeUp else Icons.AutoMirrored.Filled.VolumeOff,
-                contentDescription = "Динамик"
+                contentDescription = stringResource(R.string.speaker)
             )
         }
     }
@@ -194,7 +208,10 @@ private fun FrequencyTuningRow(
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         IconButton(onClick = onSeekDownClick, enabled = isPlaying) {
-            Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Поиск вниз")
+            Icon(
+                Icons.Default.ArrowBackIosNew,
+                contentDescription = stringResource(R.string.seek_down)
+            )
         }
 
         FrequencyDisplay(
@@ -205,7 +222,10 @@ private fun FrequencyTuningRow(
         )
 
         IconButton(onClick = onSeekUpClick, enabled = isPlaying) {
-            Icon(Icons.AutoMirrored.Filled.ArrowForwardIos, contentDescription = "Поиск вверх")
+            Icon(
+                Icons.AutoMirrored.Filled.ArrowForwardIos,
+                contentDescription = stringResource(R.string.seek_up)
+            )
         }
     }
 }
@@ -217,7 +237,11 @@ private fun RecordingStatusText(
     modifier: Modifier = Modifier
 ) {
     Text(
-        text = if (isRecordingPaused) "Запись приостановлена • $recordingTime" else "● Идёт запись... $recordingTime",
+        text = if (isRecordingPaused) {
+            stringResource(R.string.recording_paused_format, recordingTime)
+        } else {
+            stringResource(R.string.recording_active_format, recordingTime)
+        },
         color = if (isRecordingPaused) {
             MaterialTheme.colorScheme.onSurfaceVariant
         } else {
