@@ -9,7 +9,7 @@ Custom FM radio app for Android, built around hardware FM tuner access on differ
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/github/v/release/NordisApps/nordis_fm_radio?include_prereleases&label=release" alt="Release">
+  <img src="https://img.shields.io/github/v/release/NordisApps/nordis-fm-radio?include_prereleases&label=release" alt="Release">
   <img src="https://img.shields.io/github/downloads/NordisApps/nordis-fm-radio/total?label=downloads" alt="Downloads">
   <img src="https://img.shields.io/badge/Kotlin-7F52FF?logo=kotlin&logoColor=white" alt="Kotlin">
   <img src="https://img.shields.io/badge/Jetpack%20Compose-4285F4?logo=jetpackcompose&logoColor=white" alt="Jetpack Compose">
@@ -28,16 +28,23 @@ Custom FM radio app for Android, built around hardware FM tuner access on differ
 - FM recording (pause / stop / cancel) with automatic volume normalization
 - Speaker or headphone output
 - Settings: band, channel spacing, RDS, mono mode, soft-mute
+- English and Russian interface with in-app language switching
 - Light and dark theme
+- Tiny footprint: the APK is under 2 MB
 
 ## 📱 Supported Devices
 
-Currently supported:
+Fully supported:
 
 - Samsung Galaxy A10s
 - Samsung Galaxy M30s
 
-Other Samsung phones may work, but compatibility is not guaranteed.
+Partially supported:
+
+- Samsung Galaxy S25 Ultra (Korean model): basic FM features work with the original Samsung USB-C earphones. Some features work only partially. Support will be extended and bugs fixed gradually.
+- Known limitations: recording may produce silent files, and scanning right after launch may find nothing until the radio is turned off and on again.
+
+Other Samsung phones may work, but compatibility is not guaranteed. Other regional versions of the same model may have no FM service at all.
 
 Support for additional devices is planned.
 
@@ -46,22 +53,24 @@ Support for additional devices is planned.
 - Android 8.0 (API 26) or newer
 - A device with FM radio hardware support
 - Wired headphones connected (used as the antenna)
+- On phones without a headphone jack: wired USB-C headphones (original Samsung USB-C earphones are tested)
 
 ## 🌐 Language
 
-The interface is mostly in Russian during the alpha. Translations are planned.
+The interface is available in English and Russian. You can switch the language in Settings. More translations are planned.
 
 ## 📥 Download
 
-Grab the latest APK from the [Releases](https://github.com/NordisApps/nordis_fm_radio/releases) page.
+Grab the latest APK from the [Releases](https://github.com/NordisApps/nordis-fm-radio/releases) page.
 
 This is an early alpha, so expect bugs and rough edges.
 
 ## 🐛 Feedback
 
-Found a bug or have a device to add? Please [open an issue](https://github.com/NordisApps/nordis_fm_radio/issues) and include:
+Found a bug or have a device to add? Please [open an issue](https://github.com/NordisApps/nordis-fm-radio/issues) and include:
 
 - your phone model and Android version
+- your firmware region (CSC), if you know it
 - what you did and what happened
 - what you expected instead
 
