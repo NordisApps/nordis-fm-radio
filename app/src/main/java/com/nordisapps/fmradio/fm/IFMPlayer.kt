@@ -39,10 +39,6 @@ interface IFMPlayer {
 
     fun enableRDS()
 
-    fun enableDNS()
-
-    fun isDNSEnable(): Boolean
-
     fun isRDSEnable(): Boolean
 
     fun enableAF()

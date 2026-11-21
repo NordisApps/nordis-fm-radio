@@ -2,42 +2,51 @@ package com.nordisapps.fmradio.fm
 
 import android.os.IBinder
 import android.os.Parcel
+import android.util.Log
 
 class IFMPlayerProxy(
-    private val remote: IBinder
+    private val remote: IBinder,
+    private val codes: FmCodes
 ) : IFMPlayer {
     companion object {
         const val DESCRIPTOR =
             "com.samsung.android.media.fmradio.internal.IFMPlayer"
 
-        const val TRANSACTION_ON = 4
-        const val TRANSACTION_IS_ON = 7
-        const val TRANSACTION_OFF = 6
+        const val TRANSACTION_SET_LISTENER = 1
         const val TRANSACTION_TUNE = 3
-        const val TRANSACTION_SEEK_DOWN = 9
+        const val TRANSACTION_ON = 4
+        const val TRANSACTION_OFF = 6
+        const val TRANSACTION_IS_ON = 7
         const val TRANSACTION_SEEK_UP = 8
+        const val TRANSACTION_SEEK_DOWN = 9
+        const val TRANSACTION_GET_CURRENT_CHANNEL = 11
         const val TRANSACTION_SCAN = 12
         const val TRANSACTION_CANCEL_SCAN = 13
         const val TRANSACTION_IS_SCANNING = 14
-        const val TRANSACTION_GET_LAST_SCAN_RESULT = 33
-        const val TRANSACTION_GET_CURRENT_CHANNEL = 11
-        const val TRANSACTION_SET_SPEAKER = 40
-        const val TRANSACTION_SET_STEREO = 34
-        const val TRANSACTION_SET_SOFTMUTE = 47
-        const val TRANSACTION_GET_SOFTMUTE = 48
-        const val TRANSACTION_IS_HEADSET_PLUGGED = 38
         const val TRANSACTION_ENABLE_RDS = 20
-        const val TRANSACTION_IS_RDS_ENABLE = 30
-        const val TRANSACTION_ENABLE_DNS = 22
-        const val TRANSACTION_IS_DNS_ENABLE = 24
-        const val TRANSACTION_ENABLE_AF = 25
-        const val TRANSACTION_DISABLE_AF = 26
-        const val TRANSACTION_SET_LISTENER = 1
-        const val TRANSACTION_GET_INTEGER_TUNNING_PARAMETER = 51
-        const val TRANSACTION_SET_CHANNEL_SPACING = 28
-        const val TRANSACTION_SET_BAND = 27
         const val TRANSACTION_DISABLE_RDS = 21
-        const val TRANSACTION_SET_MONO = 35
+
+        private const val PROBE_OLD_ONLY = 56
+
+        fun create(remote: IBinder): IFMPlayerProxy {
+            val old = probeOldOnly(remote)
+            Log.d("IFMPlayerProxy", "layout = ${if (old) "OLD" else "NEW"}")
+            return IFMPlayerProxy(remote, if (old) FmCodes.OLD else FmCodes.NEW)
+        }
+
+        private fun probeOldOnly(binder: IBinder): Boolean {
+            val data = Parcel.obtain()
+            val reply = Parcel.obtain()
+            return try {
+                data.writeInterfaceToken(DESCRIPTOR)
+                binder.transact(PROBE_OLD_ONLY, data, reply, 0)
+            } catch (_: Exception) {
+                false
+            } finally {
+                data.recycle()
+                reply.recycle()
+            }
+        }
     }
 
     private inline fun <T> transact(
@@ -52,7 +61,9 @@ class IFMPlayerProxy(
             data.writeInterfaceToken(DESCRIPTOR)
             data.writeArgs()
 
-            remote.transact(code, data, reply, 0)
+            if (!remote.transact(code, data, reply, 0)) {
+                throw UnsupportedOperationException("transaction $code rejected")
+            }
 
             reply.readException()
             reply.readResult()
@@ -84,7 +95,7 @@ class IFMPlayerProxy(
 
     override fun isScanning(): Boolean = transact(TRANSACTION_IS_SCANNING) { readInt() != 0 }
 
-    override fun getLastScanResult(): LongArray = transact(TRANSACTION_GET_LAST_SCAN_RESULT) {
+    override fun getLastScanResult(): LongArray = transact(codes.getLastScanResult) {
         createLongArray() ?: LongArray(0)
     }
 
@@ -92,43 +103,43 @@ class IFMPlayerProxy(
         transact(TRANSACTION_GET_CURRENT_CHANNEL) { readLong() }
 
     override fun setSpeakerOn(enabled: Boolean) = transact(
-        TRANSACTION_SET_SPEAKER,
+        codes.setSpeaker,
         writeArgs = { writeInt(if (enabled) 1 else 0) }
     ) {}
 
-    override fun setStereo() = transact(TRANSACTION_SET_STEREO) {}
+    override fun setStereo() = transact(codes.setStereo) {}
 
-    override fun setMono() = transact(TRANSACTION_SET_MONO) {}
+    override fun setMono() = transact(codes.setMono) {}
 
     override fun setSoftmute(enabled: Boolean) = transact(
-        TRANSACTION_SET_SOFTMUTE,
+        codes.setSoftmute,
         writeArgs = { writeInt(if (enabled) 1 else 0) }
     ) {}
 
-    override fun getSoftMuteMode(): Boolean = transact(TRANSACTION_GET_SOFTMUTE) { readInt() != 0 }
+    override fun getSoftMuteMode(): Boolean =
+        transact(codes.getSoftmute) { readInt() != 0 }
 
     override fun isHeadsetPlugged(): Boolean =
-        transact(TRANSACTION_IS_HEADSET_PLUGGED) { readInt() != 0 }
+        transact(codes.isHeadsetPlugged) { readInt() != 0 }
 
     override fun disableRDS() = transact(TRANSACTION_DISABLE_RDS) {}
 
     override fun enableRDS() = transact(TRANSACTION_ENABLE_RDS) {}
 
-    override fun isRDSEnable(): Boolean = transact(TRANSACTION_IS_RDS_ENABLE) { readInt() != 0 }
+    override fun isRDSEnable(): Boolean =
+        transact(codes.isRdsEnable) { readInt() != 0 }
 
-    override fun enableDNS() = transact(TRANSACTION_ENABLE_DNS) {}
+    override fun enableAF() = transact(codes.enableAf) {}
 
-    override fun isDNSEnable(): Boolean = transact(TRANSACTION_IS_DNS_ENABLE) { readInt() != 0 }
+    override fun disableAF() = transact(codes.disableAf) {}
 
-    override fun enableAF() = transact(TRANSACTION_ENABLE_AF) {}
-
-    override fun disableAF() = transact(TRANSACTION_DISABLE_AF) {}
-
-    override fun setBand(band: Int) = transact(TRANSACTION_SET_BAND, writeArgs = { writeInt(band) }
+    override fun setBand(band: Int) = transact(
+        codes.setBand,
+        writeArgs = { writeInt(band) }
     ) {}
 
     override fun setChannelSpacing(spacing: Int) = transact(
-        TRANSACTION_SET_CHANNEL_SPACING,
+        codes.setChannelSpacing,
         writeArgs = { writeInt(spacing) }
     ) {}
 
@@ -141,7 +152,7 @@ class IFMPlayerProxy(
         key: String,
         defaultValue: Int
     ): Int = transact(
-        TRANSACTION_GET_INTEGER_TUNNING_PARAMETER,
+        codes.getIntegerTuning,
         writeArgs = {
             writeString(key)
             writeInt(defaultValue)

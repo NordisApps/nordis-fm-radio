@@ -5,6 +5,7 @@ import android.media.AudioManager
 import android.util.Log
 import com.nordisapps.fmradio.fm.IFMPlayerProxy
 import com.nordisapps.fmradio.fm.RadioEventListener
+import com.nordisapps.fmradio.system.FM_SERVICE_NAME
 import com.nordisapps.fmradio.system.SamsungAudioRouter
 import com.nordisapps.fmradio.system.SystemServiceLocator
 import kotlinx.coroutines.sync.Mutex
@@ -70,9 +71,9 @@ class FmRadioManager(context: Context) {
     }
 
     private fun connectRadio(): IFMPlayerProxy {
-        val binder = SystemServiceLocator.getService("FMPlayer")
+        val binder = SystemServiceLocator.getService(FM_SERVICE_NAME)
         Log.d("FmRadioManager", "BINDER = $binder")
-        return IFMPlayerProxy(binder)
+        return IFMPlayerProxy.create(binder)
     }
 
     fun play(isMonoMode: Boolean = false, isSoftMuteEnabled: Boolean = false, isRdsEnabled: Boolean = true) {
